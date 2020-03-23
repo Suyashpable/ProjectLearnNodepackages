@@ -1,0 +1,68 @@
+const express = require ('express');
+const app = express ();
+const mysql = require ('mysql');
+const connection = mysql.createConnection ({
+    host: 'localhost',
+    user: 'Suyash',
+    password: 'password',
+    database: 'application'
+});
+
+app.get ('/', (res, req) => {
+    res.render ('top.ejs');
+});
+
+app.get ('/index', (res, req) => {
+    connection.query (
+        'SELECT * FROM items',
+        (error, results) => {
+            res.render ('index.ejs', {items: results});
+        }
+    );
+});
+
+app.post ('/new', (res, req) => {
+    res.render ('new.ejs');
+});
+
+app.post ('/create', (res, req) => {
+    connection.query (
+        'INSERT INTO items (name) VALUES (?)',
+        [req.body.itemName],
+        (error, results) => {
+            res.redirect ('/index');
+        }
+    );
+});
+
+app.post ('/delete', (res, req) => {
+    connection.query (
+        'DELETE FROM items WHERE id= ?',
+        [req.params.id],
+        (error, results) => {
+            res.redirect ('/index');
+        }
+    );
+});
+
+app.get ('/edit/:id', (res, req) => {
+    connection.query (
+        'SELECT * FROM items WHERE id= ?',
+        [req.params.id],
+        (error, results) => {
+            res.render ('edit.ejs', {items: results[0]});
+        }
+    );
+});
+
+app.post ('/update/:id', (res, req) => {
+    connection.query (
+        'UPDATE items SET name= ? WHERE id= ?',
+        [req.body.itemName, req.params.id],
+        (error, results) => {
+            res.redirect ('/index');
+        }
+    );
+});
+
+app.listen (3000);
